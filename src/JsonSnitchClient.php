@@ -44,29 +44,29 @@ class JsonSnitchClient extends AsyncRequestJson
 
     public function post(string $path, array|string $body = [], array $headers = [], array $config = []): PromiseInterface
     {
-        $headers['X-PROXY-TO'] = $this->baseURL . $path;
-        $headers['X-PROXY-CONFIG'] = json_encode($config);
+        $headers['X-Proxy-To'] = $this->baseURL . $path;
+        $headers['X-Proxy-Config'] = json_encode($config);
         return parent::post($this->proxyURL, $body, $headers);
     }
 
     public function put(string $path, array|string $body = [], array $headers = [], array $config = []): PromiseInterface
     {
-        $headers['X-PROXY-TO'] = $this->baseURL . $path;
-        $headers['X-PROXY-CONFIG'] = json_encode($config);
+        $headers['X-Proxy-To'] = $this->baseURL . $path;
+        $headers['X-Proxy-Config'] = json_encode($config);
         return parent::put($this->proxyURL, $body, $headers);
     }
 
     public function patch(string $path, array|string $body = [], array $headers = [], array $config = []): PromiseInterface
     {
-        $headers['X-PROXY-TO'] = $this->baseURL . $path;
-        $headers['X-PROXY-CONFIG'] = json_encode($config);
+        $headers['X-Proxy-To'] = $this->baseURL . $path;
+        $headers['X-Proxy-Config'] = json_encode($config);
         return parent::patch($this->proxyURL, $body, $headers);
     }
 
     public function get(string $path, array $params = [], array $headers = [], array $config = []): PromiseInterface
     {
-        $headers['X-PROXY-TO'] = $this->baseURL . $path;
-        $headers['X-PROXY-CONFIG'] = json_encode($config);
+        $headers['X-Proxy-To'] = $this->baseURL . $path;
+        $headers['X-Proxy-Config'] = json_encode($config);
         return parent::get($this->proxyURL, $params, $headers);
     }
 }

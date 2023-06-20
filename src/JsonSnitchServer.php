@@ -47,18 +47,18 @@ class JsonSnitchServer
 
         echo "HEADERS IS: " . json_encode($headers, 128) . PHP_EOL;
 
-        if (!isset($headers['X-PROXY-TO']))
+        if (!isset($headers['X-Proxy-To']))
             return new Response(451, ['Content-Type' => 'application/json'], json_encode([
                 'result' => false,
-                'error' => 'X-PROXY-TO header is required'
+                'error' => 'X-Proxy-To header is required'
             ]));
 
         $body = @$request->getParsedBody() ?? [];
         $query = @$request->getQueryParams() ?? [];
 
-        $url = $headers['X-PROXY-TO'][0];
-        if (isset($headers['X-PROXY-CONFIG'])) {
-            $config = json_decode($headers['X-PROXY-CONFIG'][0], true);
+        $url = $headers['X-Proxy-To'][0];
+        if (isset($headers['X-Proxy-Config'])) {
+            $config = json_decode($headers['X-Proxy-Config'][0], true);
         } else {
             $config = [
                 "followRedirects" => true,
@@ -104,7 +104,7 @@ class JsonSnitchServer
     private function cleanHeaders(array $headers): array
     {
         $cleanedHeaders = [];
-        $badHeaders = ["Host", "User-Agent", "Accept", "X-PROXY-TO", "X-PROXY-CONFIG", 'X-Forwarded-Host', 'X-Forwarded-Port', 'X-Forwarded-Proto', 'X-Real-Ip', 'X-Forwarded-Server', 'X-Trace-Id'];
+        $badHeaders = ["Host", "User-Agent", "Accept", "X-Proxy-To", "X-Proxy-Config", 'X-Forwarded-Host', 'X-Forwarded-Port', 'X-Forwarded-Proto', 'X-Real-Ip', 'X-Forwarded-Server', 'X-Trace-Id'];
         foreach ($headers as $headerName => $headerValue) {
             if (!in_array($headerName, $badHeaders, true))
                 $cleanedHeaders[$headerName] = $headerValue[0];
