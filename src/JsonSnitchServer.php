@@ -64,6 +64,13 @@ class JsonSnitchServer
             ];
         }
 
+        echo '---------------------' . PHP_EOL;
+        echo $method . ' ' . $url . PHP_EOL;
+        echo 'BODY IS: ' . json_encode($body, 128) . PHP_EOL;
+        echo 'HEADER IS: ' . json_encode($this->cleanHeaders($headers), 128) . PHP_EOL;
+        echo 'QUERY IS: ' . json_encode($query, 128) . PHP_EOL;
+        echo '---------------------' . PHP_EOL;
+
         return $this->executeAPICall(
             $method,
             $url,
