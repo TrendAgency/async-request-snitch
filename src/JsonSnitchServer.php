@@ -3,6 +3,7 @@
 namespace Saraf;
 
 use Psr\Http\Message\ServerRequestInterface;
+use React\EventLoop\Loop;
 use React\Http\HttpServer;
 use React\Http\Message\Response;
 use React\Http\Middleware\LimitConcurrentRequestsMiddleware;
@@ -21,21 +22,23 @@ class JsonSnitchServer
         $this->api = new AsyncRequestJson();
     }
 
-    public function __invoke(string $host = "0.0.0.0", string|int $port = "98981"): void
+    public function start(string $host, string|int $port): void
     {
+        $loop = Loop::get();
         $http = new HttpServer(
             new StreamingRequestMiddleware(),
             new LimitConcurrentRequestsMiddleware(100),
             new RequestBodyBufferMiddleware(2 * 1024 * 1024), // 2MB
             new RequestBodyParserMiddleware(),
-            [$this, 'server']
+            $this
         );
 
         $socket = new SocketServer($host . ':' . $port);
         $http->listen($socket);
+        $loop->run();
     }
 
-    private function server(ServerRequestInterface $request): PromiseInterface|Response
+    public function __invoke(ServerRequestInterface $request): PromiseInterface|Response
     {
         $method = $request->getMethod();
         $headers = $request->getHeaders();
@@ -56,13 +59,10 @@ class JsonSnitchServer
             $config = [
                 "followRedirects" => true,
                 "timeout" => 5,
-                "headers" => [
-                    "Content-Type" => 'application/json'
-                ]
             ];
         }
-
-        echo json_encode($url) . PHP_EOL;
+        unset($headers['X-PROXY-CONFIG']);
+        unset($headers['X-PROXY-TO']);
 
         return $this->executeAPICall($method, $url, [...$body, ...$query], $headers, $config);
     }
@@ -76,7 +76,7 @@ class JsonSnitchServer
         array        $config
     ): PromiseInterface
     {
-        $this->api = $this->api->setConfig($config);
+        $this->api->setConfig($config);
         $request = match ($method) {
             'GET' => $this->api->get($url, $body, $headers),
             'DELETE' => $this->api->delete($url, $body, $headers),
