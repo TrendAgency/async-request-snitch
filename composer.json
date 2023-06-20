@@ -1,5 +1,5 @@
 {
-    "name": "saraf/api-bypass-proxy",
+    "name": "saraf/async-request-snitch",
     "type": "library",
     "autoload": {
         "psr-4": {
