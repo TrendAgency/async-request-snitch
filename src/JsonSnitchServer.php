@@ -2,8 +2,15 @@
 
 namespace Saraf;
 
+use Psr\Http\Message\ServerRequestInterface;
+use React\Http\HttpServer;
 use React\Http\Message\Response;
+use React\Http\Middleware\LimitConcurrentRequestsMiddleware;
+use React\Http\Middleware\RequestBodyBufferMiddleware;
+use React\Http\Middleware\RequestBodyParserMiddleware;
+use React\Http\Middleware\StreamingRequestMiddleware;
 use React\Promise\PromiseInterface;
+use React\Socket\SocketServer;
 
 class JsonSnitchServer
 {
@@ -14,21 +21,21 @@ class JsonSnitchServer
         $this->api = new AsyncRequestJson();
     }
 
-    public function __invoke($host = "0.0.0.0", $port = "98981"): void
+    public function __invoke(string $host = "0.0.0.0", string|int $port = "98981"): void
     {
-        $http = new React\Http\HttpServer(
-            new React\Http\Middleware\StreamingRequestMiddleware(),
-            new React\Http\Middleware\LimitConcurrentRequestsMiddleware(100), // 100 concurrent buffering handlers
-            new React\Http\Middleware\RequestBodyBufferMiddleware(2 * 1024 * 1024), // 2 MiB per request
-            new React\Http\Middleware\RequestBodyParserMiddleware(),
+        $http = new HttpServer(
+            new StreamingRequestMiddleware(),
+            new LimitConcurrentRequestsMiddleware(100),
+            new RequestBodyBufferMiddleware(2 * 1024 * 1024), // 2MB
+            new RequestBodyParserMiddleware(),
             [$this, 'server']
         );
 
-        $socket = new React\Socket\SocketServer($host . ':' . $port);
+        $socket = new SocketServer($host . ':' . $port);
         $http->listen($socket);
     }
 
-    private function server(Psr\Http\Message\ServerRequestInterface $request): PromiseInterface|Response
+    private function server(ServerRequestInterface $request): PromiseInterface|Response
     {
         $method = $request->getMethod();
         $headers = $request->getHeaders();
