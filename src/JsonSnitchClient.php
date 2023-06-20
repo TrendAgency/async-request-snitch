@@ -10,7 +10,9 @@ class JsonSnitchClient extends AsyncRequestJson
     protected string $proxyURL;
     protected string $baseURL = "";
 
-    public function __construct(string $proxyURL, Connector $connector = new Connector(['verify_peer' => false, 'verify_peer_name' => false]))
+    public function __construct(string $proxyURL, Connector $connector = new Connector([
+        "tls" => ['verify_peer' => false, 'verify_peer_name' => false]
+    ]))
     {
         parent::__construct($connector);
         $this->proxyURL = $proxyURL;

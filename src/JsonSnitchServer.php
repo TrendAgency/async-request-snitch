@@ -55,7 +55,7 @@ class JsonSnitchServer
         $query = @$request->getQueryParams() ?? [];
 
         $url = $headers['X-PROXY-TO'][0];
-        if (!isset($headers['X-PROXY-CONFIG'])) {
+        if (isset($headers['X-PROXY-CONFIG'])) {
             $config = json_decode($headers['X-PROXY-CONFIG'][0], true);
         } else {
             $config = [
