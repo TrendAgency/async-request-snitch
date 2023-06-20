@@ -52,9 +52,9 @@ class JsonSnitchServer
             ]));
 
         $body = @$request->getBody()->getContents();
-        if (str_contains($headers['Content-Type'][0], 'application/json')) {
+        if (str_contains($headers['Content-Type'][0], 'application/json') && ($method != 'GET' && $method != 'DELETE')) {
             $body = json_decode($body, true);
-            if(json_last_error() != JSON_ERROR_NONE)
+            if (json_last_error() != JSON_ERROR_NONE)
                 return new Response(451, ['Content-Type' => 'application/json'], json_encode([
                     'result' => false,
                     'error' => 'Body parser error'
