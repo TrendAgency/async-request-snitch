@@ -16,11 +16,5 @@
         "react/event-loop": ">=1.3",
         "react/http": ">=1.6",
         "saraf/async-request": "dev-main"
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/SarafApp/async-request.git"
-        }
-    ]
+    }
 }
