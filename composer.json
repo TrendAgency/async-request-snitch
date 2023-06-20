@@ -1,0 +1,26 @@
+{
+    "name": "saraf/api-bypass-proxy",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Saraf\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Hasan Parasteh",
+            "email": "hasanparasteh@gmail.com"
+        }
+    ],
+    "require": {
+        "react/event-loop": "^1.4",
+        "saraf/async-request": "dev-main",
+        "react/http": "^1.9"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/SarafApp/async-request.git"
+        }
+    ]
+}
