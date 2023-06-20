@@ -45,8 +45,6 @@ class JsonSnitchServer
         $method = $request->getMethod();
         $headers = $request->getHeaders();
 
-        echo "HEADERS IS: " . json_encode($headers, 128) . PHP_EOL;
-
         if (!isset($headers['X-Proxy-To']))
             return new Response(451, ['Content-Type' => 'application/json'], json_encode([
                 'result' => false,
