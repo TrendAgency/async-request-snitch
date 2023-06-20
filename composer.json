@@ -1,6 +1,7 @@
 {
     "name": "saraf/async-request-snitch",
     "type": "library",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Saraf\\": "src/"
