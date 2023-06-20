@@ -12,6 +12,7 @@ use React\Http\Middleware\RequestBodyParserMiddleware;
 use React\Http\Middleware\StreamingRequestMiddleware;
 use React\Promise\PromiseInterface;
 use React\Socket\SocketServer;
+use Saraf\ResponseHandlers\HandlerEnum;
 
 class JsonSnitchServer
 {
@@ -20,6 +21,7 @@ class JsonSnitchServer
     public function __construct()
     {
         $this->api = new AsyncRequestJson();
+        $this->api->setResponseHandler(HandlerEnum::Basic);
     }
 
     public function start(string $host, string|int $port): void
@@ -61,10 +63,14 @@ class JsonSnitchServer
                 "timeout" => 5,
             ];
         }
-        unset($headers['X-PROXY-CONFIG']);
-        unset($headers['X-PROXY-TO']);
 
-        return $this->executeAPICall($method, $url, [...$body, ...$query], $headers, $config);
+        return $this->executeAPICall(
+            $method,
+            $url,
+            [...$body, ...$query],
+            $this->cleanHeaders($headers),
+            $config
+        );
     }
 
 
@@ -91,5 +97,17 @@ class JsonSnitchServer
 
             return new Response($response['code'], $response['headers'], $response['body']);
         });
+    }
+
+    private function cleanHeaders(array $headers): array
+    {
+        $cleanedHeaders = [];
+        $badHeaders = ["Host", "User-Agent", "Accept", "X-PROXY-TO", "X-PROXY-CONFIG", 'X-Forwarded-Host', 'X-Forwarded-Port', 'X-Forwarded-Proto', 'X-Real-Ip', 'X-Forwarded-Server', 'X-Trace-Id'];
+        foreach ($headers as $headerName => $headerValue) {
+            if (!in_array($headerName, $badHeaders, true))
+                $cleanedHeaders[$headerName] = $headerValue[0];
+        }
+
+        return $cleanedHeaders;
     }
 }
