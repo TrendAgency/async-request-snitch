@@ -24,12 +24,6 @@ class JsonSnitchClient extends AsyncRequestJson
             $this->browser = $this->browser->withTimeout($config['timeout']);
         }
 
-        if (isset($config['headers'])) {
-            foreach ($config['headers'] as $key => $value) {
-                $this->browser = $this->browser->withHeader($key, $value);
-            }
-        }
-
         if (isset($config['baseURL'])) {
             $this->baseURL = $config['baseURL'];
         }
