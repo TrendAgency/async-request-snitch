@@ -52,7 +52,9 @@ class JsonSnitchServer
             ]));
 
         $body = @$request->getBody()->getContents();
-        if (str_contains($headers['Content-Type'][0], 'application/json') && ($method != 'GET' && $method != 'DELETE')) {
+        if (str_contains($headers['Content-Type'][0], 'application/json')
+            && ($method != 'GET' && $method != 'DELETE')
+        ) {
             $body = json_decode($body, true);
             if (json_last_error() != JSON_ERROR_NONE)
                 return new Response(451, ['Content-Type' => 'application/json'], json_encode([
@@ -60,6 +62,7 @@ class JsonSnitchServer
                     'error' => 'Body parser error'
                 ]));
         }
+
         $query = @$request->getQueryParams() ?? [];
 
         $url = $headers['X-Proxy-To'][0];
@@ -82,12 +85,11 @@ class JsonSnitchServer
         return $this->executeAPICall(
             $method,
             $url,
-            [...$body, ...$query],
+            ($method == 'GET' || $method == 'DELETE') ? $query : $body,
             $this->cleanHeaders($headers),
             $config
         );
     }
-
 
     private function executeAPICall(
         string       $method,
