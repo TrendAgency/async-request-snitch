@@ -63,4 +63,11 @@ class JsonSnitchClient extends AsyncRequestJson
         $headers['X-Proxy-Config'] = json_encode($config);
         return parent::get($this->proxyURL, $params, $headers);
     }
+
+    public function delete(string $path, array $params = [], array $headers = [], array $config = []): PromiseInterface
+    {
+        $headers['X-Proxy-To'] = $this->baseURL . $path;
+        $headers['X-Proxy-Config'] = json_encode($config);
+        return parent::delete($this->proxyURL, $params, $headers);
+    }
 }
