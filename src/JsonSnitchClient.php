@@ -7,12 +7,15 @@ use React\Socket\Connector;
 
 class JsonSnitchClient extends AsyncRequestJson
 {
+    protected array $snitchConfig = [];
+
     protected string $proxyURL;
     protected string $baseURL = "";
 
-    public function __construct(string $proxyURL, Connector $connector = new Connector([
-        "tls" => ['verify_peer' => false, 'verify_peer_name' => false]
-    ]))
+    public function __construct(
+        string    $proxyURL,
+        Connector $connector = new Connector(["tls" => ['verify_peer' => false, 'verify_peer_name' => false]])
+    )
     {
         parent::__construct($connector);
         $this->proxyURL = $proxyURL;
@@ -35,39 +38,56 @@ class JsonSnitchClient extends AsyncRequestJson
         return $this;
     }
 
+    public function setSnitchConfig(array $config): static
+    {
+        if (isset($config['timeout'])) {
+            $this->snitchConfig['timeout'] = $config['timeout'];
+        }
+
+        if (isset($config['followRedirects'])) {
+            $this->snitchConfig['followRedirects'] = $config['followRedirects'];
+        }
+
+        return $this;
+    }
 
     public function post(string $path, array|string $body = [], array $headers = [], array $config = []): PromiseInterface
     {
         $headers['X-Proxy-To'] = $this->baseURL . $path;
-        $headers['X-Proxy-Config'] = json_encode($config);
+        $headers['X-Proxy-Config'] = json_encode($config + $this->snitchConfig);
+
         return parent::post($this->proxyURL, $body, $headers);
     }
 
     public function put(string $path, array|string $body = [], array $headers = [], array $config = []): PromiseInterface
     {
         $headers['X-Proxy-To'] = $this->baseURL . $path;
-        $headers['X-Proxy-Config'] = json_encode($config);
+        $headers['X-Proxy-Config'] = json_encode($config + $this->snitchConfig);
+
         return parent::put($this->proxyURL, $body, $headers);
     }
 
     public function patch(string $path, array|string $body = [], array $headers = [], array $config = []): PromiseInterface
     {
         $headers['X-Proxy-To'] = $this->baseURL . $path;
-        $headers['X-Proxy-Config'] = json_encode($config);
+        $headers['X-Proxy-Config'] = json_encode($config + $this->snitchConfig);
+
         return parent::patch($this->proxyURL, $body, $headers);
     }
 
     public function get(string $path, array $params = [], array $headers = [], array $config = []): PromiseInterface
     {
         $headers['X-Proxy-To'] = $this->baseURL . $path;
-        $headers['X-Proxy-Config'] = json_encode($config);
+        $headers['X-Proxy-Config'] = json_encode($config + $this->snitchConfig);
+
         return parent::get($this->proxyURL, $params, $headers);
     }
 
     public function delete(string $path, array $params = [], array $headers = [], array $config = []): PromiseInterface
     {
         $headers['X-Proxy-To'] = $this->baseURL . $path;
-        $headers['X-Proxy-Config'] = json_encode($config);
+        $headers['X-Proxy-Config'] = json_encode($config + $this->snitchConfig);
+
         return parent::delete($this->proxyURL, $params, $headers);
     }
 }
