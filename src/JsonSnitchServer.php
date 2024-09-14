@@ -87,7 +87,7 @@ class JsonSnitchServer
         } else {
             $config = [
                 "followRedirects" => true,
-                "timeout" => 5,
+                "timeout" => 30,
             ];
         }
 
