@@ -16,6 +16,20 @@ use Saraf\ResponseHandlers\HandlerEnum;
 
 class JsonSnitchServer
 {
+    const BAD_HEADERS = [
+        "Host",
+        "User-Agent",
+        "Accept",
+        "X-Proxy-To",
+        "X-Proxy-Config",
+        'X-Forwarded-Host',
+        'X-Forwarded-Port',
+        'X-Forwarded-Proto',
+        'X-Real-Ip',
+        'X-Forwarded-Server',
+        'X-Trace-Id'
+    ];
+
     protected AsyncRequestJson $api;
 
     public function __construct()
@@ -30,7 +44,7 @@ class JsonSnitchServer
         $http = new HttpServer(
             new StreamingRequestMiddleware(),
             new LimitConcurrentRequestsMiddleware(100),
-            new RequestBodyBufferMiddleware(2 * 1024 * 1024), // 2MB
+            new RequestBodyBufferMiddleware(16 * 1024 * 1024), // 16MB
             new RequestBodyParserMiddleware(),
             $this
         );
@@ -52,8 +66,10 @@ class JsonSnitchServer
             ]));
 
         $body = @$request->getBody()->getContents();
-        if (str_contains($headers['Content-Type'][0], 'application/json')
-            && ($method != 'GET' && $method != 'DELETE')
+        if (
+            isset($headers['Content-Type']) &&
+            str_contains($headers['Content-Type'][0], 'application/json') &&
+            ($method != 'GET' && $method != 'DELETE')
         ) {
             $body = json_decode($body, true);
             if (json_last_error() != JSON_ERROR_NONE)
@@ -75,22 +91,34 @@ class JsonSnitchServer
             ];
         }
 
+        $headers = $this->cleanHeaders($headers);
+
         echo '---------------------' . PHP_EOL;
         echo $method . ' ' . $url . PHP_EOL;
         echo 'BODY IS: ' . json_encode($body, 128) . PHP_EOL;
-        echo 'HEADER IS: ' . json_encode($this->cleanHeaders($headers), 128) . PHP_EOL;
+        echo 'HEADER IS: ' . json_encode($headers, 128) . PHP_EOL;
         echo 'QUERY IS: ' . json_encode($query, 128) . PHP_EOL;
-        echo '---------------------' . PHP_EOL;
+        echo '---------------------' . PHP_EOL . PHP_EOL;
 
-        return $this->executeAPICall(
-            $method,
-            $url,
-            ($method == 'GET' || $method == 'DELETE') ? $query : $body,
-            $this->cleanHeaders($headers),
-            $config
-        );
+        try {
+            return $this->executeAPICall(
+                $method,
+                $url,
+                ($method == 'GET' || $method == 'DELETE') ? $query : $body,
+                $headers,
+                $config
+            );
+        } catch (\Exception $e) {
+            return new Response(451, ['Content-Type' => 'application/json'], json_encode([
+                'result' => false,
+                'error' => $e->getMessage()
+            ]));
+        }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function executeAPICall(
         string       $method,
         string       $url,
@@ -119,9 +147,8 @@ class JsonSnitchServer
     private function cleanHeaders(array $headers): array
     {
         $cleanedHeaders = [];
-        $badHeaders = ["Host", "User-Agent", "Accept", "X-Proxy-To", "X-Proxy-Config", 'X-Forwarded-Host', 'X-Forwarded-Port', 'X-Forwarded-Proto', 'X-Real-Ip', 'X-Forwarded-Server', 'X-Trace-Id'];
         foreach ($headers as $headerName => $headerValue) {
-            if (!in_array($headerName, $badHeaders, true))
+            if (!in_array($headerName, self::BAD_HEADERS, true))
                 $cleanedHeaders[$headerName] = $headerValue[0];
         }
 
